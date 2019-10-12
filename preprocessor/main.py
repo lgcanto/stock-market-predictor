@@ -28,7 +28,7 @@ def exportToTSV(dataframe, filename):
     if not os.path.exists(OUT_DIR):
         os.mkdir(OUT_DIR)
     fullpath = '%s/%s' % (OUT_DIR, filename)
-    dataframe.to_csv(fullpath, sep='\t', quoting=csv.QUOTE_NONE, index=False)
+    dataframe.to_csv(fullpath, sep='\t', quoting=csv.QUOTE_NONE, index=False, header=False)
 
 df_articles = df_articles[df_articles.category == 'mercado']
 artigos_unused_columns = ['text', 'category', 'subcategory', 'link']
