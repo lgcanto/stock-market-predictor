@@ -1,2 +1,3 @@
 datasets/kaggle
 preprocessor/dataset_out/*.tsv
+runs/*
