@@ -1,3 +1,4 @@
 datasets/kaggle
 preprocessor/dataset_out/*.tsv
+preprocessor/old_dataset_out/*.tsv
 runs/*

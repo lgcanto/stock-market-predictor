@@ -6,6 +6,9 @@ from datetime import timedelta
 
 OUT_DIR = './dataset_out'
 MAX_DAYS = 5
+TRAIN_PERCENTAGE_SIZE = 70/100
+EVAL_PERCENTAGE_SIZE = 10/100
+TEST_PERCENTAGE_SIZE = 20/100
 
 df_companies = pd.read_csv('../datasets/company-codes.csv')
 df_bovespa = pd.read_csv('../datasets/kaggle/bovespa.csv')
@@ -65,6 +68,47 @@ for index, row in df_companies.iterrows():
             df_company.drop(['date', 'codneg'], inplace=True, axis=1)
             df_company['label'] = df_company.apply(lambda row: getAppreciation(row['close_before'], row['close_after']), axis=1)
             df_company.drop(['close_before', 'close_after'], inplace=True, axis=1)
-            analysis = pd.Series({"dataset": row['code'] + '_' + str(interval) + 'd.tsv', "1s": df_company[df_company.label == 1].size, "0s": df_company[df_company.label == 0].size, "-1s": df_company[df_company.label == -1].size})
+            
+            df_company_positive = df_company[df_company.label == 1]
+            df_company_neutral = df_company[df_company.label == 0]
+            df_company_negative = df_company[df_company.label == -1]
+            
+            analysis = pd.Series({"dataset": row['code'] + '_' + str(interval) + 'd.tsv', "1s": len(df_company_positive), "0s": len(df_company_neutral), "-1s": len(df_company_negative)})
             df_analysis = df_analysis.append(analysis, ignore_index=True)
-            exportToTSV(df_company, row['code'] + '_' + str(interval) + 'd.tsv')
+            
+            trainPositiveSize = round(len(df_company_positive)*(TRAIN_PERCENTAGE_SIZE))
+            evalPositiveSize = round(len(df_company_positive)*(EVAL_PERCENTAGE_SIZE))
+            testPositiveSize = round(len(df_company_positive)*(TEST_PERCENTAGE_SIZE))
+
+            trainNeutralSize = round(len(df_company_neutral)*(TRAIN_PERCENTAGE_SIZE))
+            evalNeutralSize = round(len(df_company_neutral)*(EVAL_PERCENTAGE_SIZE))
+            testNeutralSize = round(len(df_company_neutral)*(TEST_PERCENTAGE_SIZE))
+
+            trainNegativeSize = round(len(df_company_negative)*(TRAIN_PERCENTAGE_SIZE))
+            evalNegativeSize = round(len(df_company_negative)*(EVAL_PERCENTAGE_SIZE))
+            testNegativeSize = round(len(df_company_negative)*(TEST_PERCENTAGE_SIZE))
+            
+            df_company_train = df_company_positive.head(trainPositiveSize)
+            df_company_positive = df_company_positive.iloc[trainPositiveSize:]
+            df_company_train = df_company_train.append(df_company_neutral.head(trainNeutralSize))
+            df_company_neutral = df_company_neutral.iloc[trainNeutralSize:]
+            df_company_train = df_company_train.append(df_company_negative.head(trainNegativeSize))
+            df_company_negative = df_company_negative.iloc[trainNegativeSize:]
+
+            df_company_eval = df_company_positive.head(evalPositiveSize)
+            df_company_positive = df_company_positive.iloc[evalPositiveSize:]
+            df_company_eval = df_company_eval.append(df_company_neutral.head(evalNeutralSize))
+            df_company_neutral = df_company_neutral.iloc[evalNeutralSize:]
+            df_company_eval = df_company_eval.append(df_company_negative.head(evalNegativeSize))
+            df_company_negative = df_company_negative.iloc[evalNegativeSize:]
+            
+            df_company_test = df_company_positive.head(testPositiveSize)
+            df_company_positive = df_company_positive.iloc[testPositiveSize:]
+            df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
+            df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
+            df_company_test = df_company_test.append(df_company_negative.head(testNegativeSize))
+            df_company_negative = df_company_negative.iloc[testNegativeSize:]
+
+            exportToTSV(df_company_train, row['code'] + '_' + str(interval) + 'd_train.tsv')
+            exportToTSV(df_company_eval, row['code'] + '_' + str(interval) + 'd_eval.tsv')
+            exportToTSV(df_company_test, row['code'] + '_' + str(interval) + 'd_test.tsv')
