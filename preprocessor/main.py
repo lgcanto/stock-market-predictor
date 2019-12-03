@@ -5,6 +5,9 @@ import csv
 import os
 from datetime import timedelta
 from unicodedata import normalize
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
 
 OUT_DIR = './dataset_out'
 MAX_DAYS = 5
@@ -14,6 +17,7 @@ TEST_PERCENTAGE_SIZE = 20/100
 REGEXP_REMOVE_SPECIAL = re.compile('[^a-zA-Z0-9 ]+')
 ONLY_ONE_CODE = True
 ONLY_ONE_CODE_NAME = 'VALE3'
+STOPWORDS = stopwords.words('portuguese')
 
 df_companies = pd.read_csv('../datasets/company-codes.csv')
 df_bovespa = pd.read_csv('../datasets/kaggle/bovespa.csv')
@@ -40,7 +44,12 @@ def exportToTSV(dataframe, filename):
     dataframe.to_csv(fullpath, sep='\t', quoting=csv.QUOTE_NONE, index=False, header=False)
 
 def getCleanText(text):
-    finalText = text.lower()
+    finalTextArray = []
+    lowerText = text.lower()
+    for word in lowerText.split():
+        if word not in STOPWORDS:
+            finalTextArray.append(word)
+    finalText = ' '.join(finalTextArray)
     finalText = normalize('NFKD', finalText).encode('ASCII', 'ignore').decode('ASCII')
     finalText = REGEXP_REMOVE_SPECIAL.sub('', finalText)
     finalText = re.sub(' +', ' ', finalText)
@@ -82,6 +91,7 @@ for index, row in df_companies.iterrows():
                 df_company.drop(['date', 'codneg'], inplace=True, axis=1)
                 df_company['label'] = df_company.apply(lambda row: getAppreciation(row['close_before'], row['close_after']), axis=1)
                 df_company.drop(['close_before', 'close_after'], inplace=True, axis=1)
+                df_company = df_company[['label', 'title']]
                 
                 df_company_positive = df_company[df_company.label == 1]
                 df_company_neutral = df_company[df_company.label == 0]
@@ -104,22 +114,22 @@ for index, row in df_companies.iterrows():
                 
                 df_company_train = df_company_positive.head(trainPositiveSize)
                 df_company_positive = df_company_positive.iloc[trainPositiveSize:]
-                df_company_train = df_company_train.append(df_company_neutral.head(trainNeutralSize))
-                df_company_neutral = df_company_neutral.iloc[trainNeutralSize:]
+#                df_company_train = df_company_train.append(df_company_neutral.head(trainNeutralSize))
+#                df_company_neutral = df_company_neutral.iloc[trainNeutralSize:]
                 df_company_train = df_company_train.append(df_company_negative.head(trainNegativeSize))
                 df_company_negative = df_company_negative.iloc[trainNegativeSize:]
 
                 df_company_eval = df_company_positive.head(evalPositiveSize)
                 df_company_positive = df_company_positive.iloc[evalPositiveSize:]
-                df_company_eval = df_company_eval.append(df_company_neutral.head(evalNeutralSize))
-                df_company_neutral = df_company_neutral.iloc[evalNeutralSize:]
+#                df_company_eval = df_company_eval.append(df_company_neutral.head(evalNeutralSize))
+#                df_company_neutral = df_company_neutral.iloc[evalNeutralSize:]
                 df_company_eval = df_company_eval.append(df_company_negative.head(evalNegativeSize))
                 df_company_negative = df_company_negative.iloc[evalNegativeSize:]
                 
                 df_company_test = df_company_positive.head(testPositiveSize)
                 df_company_positive = df_company_positive.iloc[testPositiveSize:]
-                df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
-                df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
+#                df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
+#                df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
                 df_company_test = df_company_test.append(df_company_negative.head(testNegativeSize))
                 df_company_negative = df_company_negative.iloc[testNegativeSize:]
 
