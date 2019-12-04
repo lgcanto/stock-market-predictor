@@ -8,6 +8,7 @@ from unicodedata import normalize
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 OUT_DIR = './dataset_out'
 MAX_DAYS = 5
@@ -18,6 +19,10 @@ REGEXP_REMOVE_SPECIAL = re.compile('[^a-zA-Z0-9 ]+')
 ONLY_ONE_CODE = True
 ONLY_ONE_CODE_NAME = 'VALE3'
 STOPWORDS = stopwords.words('portuguese')
+STEMMER = SnowballStemmer('portuguese')
+ARTIGOS_TEXT_COLUMN = 'text'
+ARTIGOS_UNUSED_COLUMNS = ['title', 'category', 'subcategory', 'link']
+BOVESPA_UNUSED_COLUMNS = ['open', 'company', 'typereg', 'bdicode', 'markettype', 'spec', 'prazot', 'currency', 'max', 'min', 'med', 'preofc', 'preofv', 'totneg', 'quatot']
 
 df_companies = pd.read_csv('../datasets/company-codes.csv')
 df_bovespa = pd.read_csv('../datasets/kaggle/bovespa.csv')
@@ -48,7 +53,7 @@ def getCleanText(text):
     lowerText = text.lower()
     for word in lowerText.split():
         if word not in STOPWORDS:
-            finalTextArray.append(word)
+            finalTextArray.append(STEMMER.stem(word))
     finalText = ' '.join(finalTextArray)
     finalText = normalize('NFKD', finalText).encode('ASCII', 'ignore').decode('ASCII')
     finalText = REGEXP_REMOVE_SPECIAL.sub('', finalText)
@@ -56,8 +61,7 @@ def getCleanText(text):
     return finalText
 
 df_articles = df_articles[df_articles.category == 'mercado']
-artigos_unused_columns = ['text', 'category', 'subcategory', 'link']
-df_articles.drop(artigos_unused_columns, inplace=True, axis=1)
+df_articles.drop(ARTIGOS_UNUSED_COLUMNS, inplace=True, axis=1)
 df_articles['date'] = df_articles.apply(lambda row: np.int64(row['date'].replace('-', '')), axis=1)
 df_articles['date'] = pd.to_datetime(df_articles['date'].astype(str), format='%Y%m%d')
 
@@ -65,12 +69,11 @@ df_bovespa.columns = map(str.lower, df_bovespa.columns)
 df_bovespa = df_bovespa[df_bovespa.codneg.str.strip().isin(df_companies.code)]
 df_bovespa['date'] = pd.to_datetime(df_bovespa['date'].astype(str), format='%Y%m%d')
 df_bovespa = df_bovespa[df_bovespa.date >= df_articles.date.min()]
-bovespa_unused_columns = ['open', 'company', 'typereg', 'bdicode', 'markettype', 'spec', 'prazot', 'currency', 'max', 'min', 'med', 'preofc', 'preofv', 'totneg', 'quatot']
-df_bovespa.drop(bovespa_unused_columns, inplace=True, axis=1)
+df_bovespa.drop(BOVESPA_UNUSED_COLUMNS, inplace=True, axis=1)
 df_bovespa = df_bovespa.sort_values('date')
 
 df_articles['date'] = df_articles.apply(lambda row: getEffectDate(row.date), axis=1)
-df_articles['title'] = df_articles.apply(lambda row: getCleanText(row.title), axis=1)
+df_articles[ARTIGOS_TEXT_COLUMN] = df_articles.apply(lambda row: getCleanText(row[ARTIGOS_TEXT_COLUMN]), axis=1)
 df_articles = df_articles.sort_values('date')
 
 df_analysis = pd.DataFrame(columns=['dataset','1s','0s', '-1s'])
@@ -91,11 +94,11 @@ for index, row in df_companies.iterrows():
                 df_company.drop(['date', 'codneg'], inplace=True, axis=1)
                 df_company['label'] = df_company.apply(lambda row: getAppreciation(row['close_before'], row['close_after']), axis=1)
                 df_company.drop(['close_before', 'close_after'], inplace=True, axis=1)
-                df_company = df_company[['label', 'title']]
+                df_company = df_company[['label', ARTIGOS_TEXT_COLUMN]]
                 
-                df_company_positive = df_company[df_company.label == 1]
-                df_company_neutral = df_company[df_company.label == 0]
-                df_company_negative = df_company[df_company.label == -1]
+                df_company_positive = df_company[df_company.label == 1].sample(frac=1)
+                df_company_neutral = df_company[df_company.label == 0].sample(frac=1)
+                df_company_negative = df_company[df_company.label == -1].sample(frac=1)
                 
                 analysis = pd.Series({"dataset": row['code'] + '_' + str(interval) + 'd.tsv', "1s": len(df_company_positive), "0s": len(df_company_neutral), "-1s": len(df_company_negative)})
                 df_analysis = df_analysis.append(analysis, ignore_index=True)
