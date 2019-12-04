@@ -8,7 +8,7 @@
             "field_names": ["label", "text"],
             "train_filename": "preprocessor/dataset_out/VALE3_1d_train.tsv",
             "test_filename": "preprocessor/dataset_out/VALE3_1d_test.tsv",
-            "eval_filename": "preprocessor/dataset_out/VALE3_1d_test.tsv"
+            "eval_filename": "preprocessor/dataset_out/VALE3_1d_eval.tsv"
           }
         }
       },
@@ -21,5 +21,5 @@
       }
     }
   },
-  "export_torchscript_path": "/tmp/new_vale_1d.pt1"
+  "export_torchscript_path": "/tmp/vale_1d.pt1"
 }
