@@ -12,11 +12,11 @@ from nltk.stem.snowball import SnowballStemmer
 
 OUT_DIR = './dataset_out'
 MAX_DAYS = 5
-TRAIN_PERCENTAGE_SIZE = 70/100
+TRAIN_PERCENTAGE_SIZE = 80/100
 EVAL_PERCENTAGE_SIZE = 10/100
-TEST_PERCENTAGE_SIZE = 20/100
+TEST_PERCENTAGE_SIZE = 10/100
 REGEXP_REMOVE_SPECIAL = re.compile('[^a-zA-Z0-9 ]+')
-ONLY_ONE_CODE = True
+ONLY_ONE_CODE = False
 ONLY_ONE_CODE_NAME = 'VALE3'
 STOPWORDS = stopwords.words('portuguese')
 STEMMER = SnowballStemmer('portuguese')
@@ -117,25 +117,30 @@ for index, row in df_companies.iterrows():
                 
                 df_company_train = df_company_positive.head(trainPositiveSize)
                 df_company_positive = df_company_positive.iloc[trainPositiveSize:]
-#                df_company_train = df_company_train.append(df_company_neutral.head(trainNeutralSize))
-#                df_company_neutral = df_company_neutral.iloc[trainNeutralSize:]
                 df_company_train = df_company_train.append(df_company_negative.head(trainNegativeSize))
                 df_company_negative = df_company_negative.iloc[trainNegativeSize:]
 
                 df_company_eval = df_company_positive.head(evalPositiveSize)
                 df_company_positive = df_company_positive.iloc[evalPositiveSize:]
-#                df_company_eval = df_company_eval.append(df_company_neutral.head(evalNeutralSize))
-#                df_company_neutral = df_company_neutral.iloc[evalNeutralSize:]
                 df_company_eval = df_company_eval.append(df_company_negative.head(evalNegativeSize))
                 df_company_negative = df_company_negative.iloc[evalNegativeSize:]
                 
                 df_company_test = df_company_positive.head(testPositiveSize)
                 df_company_positive = df_company_positive.iloc[testPositiveSize:]
-#                df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
-#                df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
                 df_company_test = df_company_test.append(df_company_negative.head(testNegativeSize))
                 df_company_negative = df_company_negative.iloc[testNegativeSize:]
 
-                exportToTSV(df_company_train, row['code'] + '_' + str(interval) + 'd_train.tsv')
-                exportToTSV(df_company_eval, row['code'] + '_' + str(interval) + 'd_eval.tsv')
-                exportToTSV(df_company_test, row['code'] + '_' + str(interval) + 'd_test.tsv')
+                exportToTSV(df_company_train, row['code'] + '_2c_' + str(interval) + 'd_train.tsv')
+                exportToTSV(df_company_eval, row['code'] + '_2c_' + str(interval) + 'd_eval.tsv')
+                exportToTSV(df_company_test, row['code'] + '_2c_' + str(interval) + 'd_test.tsv')
+
+                df_company_train = df_company_train.append(df_company_neutral.head(trainNeutralSize))
+                df_company_neutral = df_company_neutral.iloc[trainNeutralSize:]
+                df_company_eval = df_company_eval.append(df_company_neutral.head(evalNeutralSize))
+                df_company_neutral = df_company_neutral.iloc[evalNeutralSize:]
+                df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
+                df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
+                
+                exportToTSV(df_company_train, row['code'] + '_3c_' + str(interval) + 'd_train.tsv')
+                exportToTSV(df_company_eval, row['code'] + '_3c_' + str(interval) + 'd_eval.tsv')
+                exportToTSV(df_company_test, row['code'] + '_3c_' + str(interval) + 'd_test.tsv')
