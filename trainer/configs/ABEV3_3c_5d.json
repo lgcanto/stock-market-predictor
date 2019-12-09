@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "task": {
+    "DocumentClassificationTask": {
+      "data": {
+        "source": {
+          "TSVDataSource": {
+            "field_names": ["label", "text"],
+            "train_filename": "preprocessor/dataset_out/ABEV3_3c_5d_train.tsv",
+            "test_filename": "preprocessor/dataset_out/ABEV3_3c_5d_test.tsv",
+            "eval_filename": "preprocessor/dataset_out/ABEV3_3c_5d_eval.tsv"
+          }
+        }
+      },
+      "model": {
+        "DocModel": {
+          "representation": {
+            "DocNNRepresentation": {}
+          }
+        }
+      },
+      "trainer": { 
+        "epochs": 20
+      },
+      "metric_reporter": { 
+        "output_path": "ABEV3_3c_5d.txt", 
+        "model_select_metric": "accuracy", 
+        "target_label": null, 
+        "text_column_names": [ 
+          "text" 
+        ] 
+      }
+    }
+  },
+  "export_torchscript_path": "/tmp/ABEV3_3c_5d.pt1"
+}
