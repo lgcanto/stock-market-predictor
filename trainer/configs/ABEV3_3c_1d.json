@@ -8,7 +8,7 @@
             "field_names": ["label", "text"],
             "train_filename": "preprocessor/dataset_out/ABEV3_3c_1d_train.tsv",
             "test_filename": "preprocessor/dataset_out/ABEV3_3c_1d_test.tsv",
-            "eval_filename": "preprocessor/dataset_out/ABEV3_3c_1d_eval.tsv"
+            "eval_filename": "preprocessor/dataset_out/ABEV3_3c_1d_test.tsv"
           }
         }
       },
