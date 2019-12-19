@@ -1,0 +1,37 @@
+{
+  "version": 18,
+  "task": {
+    "DocumentClassificationTask": {
+      "data": {
+        "source": {
+          "TSVDataSource": {
+            "field_names": ["label", "text"],
+            "train_filename": "../preprocessor/dataset_out/XXXXX_Yc_Zd_train.tsv",
+            "test_filename": "../preprocessor/dataset_out/XXXXX_Yc_Zd_test.tsv",
+            "eval_filename": "../preprocessor/dataset_out/XXXXX_Yc_Zd_test.tsv"
+          }
+        }
+      },
+      "model": {
+        "DocModel": {
+          "representation": {
+            "DocNNRepresentation": {}
+          }
+        }
+      },
+      "trainer": {
+        "epochs": 15
+      },
+      "metric_reporter": {
+        "output_path": "metric_reports/XXXXX_Yc_Zd.txt",
+        "model_select_metric": "accuracy",
+        "target_label": null,
+        "text_column_names": [
+          "text"
+        ]
+      }
+    }
+  },
+  "export_torchscript_path": "torchscripts/XXXXX_Yc_Zd.pt1",
+  "export_caffe2_path": "caffe2_exports/XXXXX_Yc_Zd.caffe2.predictor"
+}
