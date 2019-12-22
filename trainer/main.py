@@ -10,6 +10,7 @@ for index, row in df_companies.iterrows():
     asset = row['code']
     for d in range(MAX_DAYS):
         interval = d + 1
+        # configName = asset + "_2c_" + str(interval) + "d"
         configName = asset + "_3c_" + str(interval) + "d"
         fileName = "configs/" + configName + ".json"
         with open("templateconfig_XXXXX_Yc_Zd.json") as inputFile, open(fileName, "w") as outputFile:

@@ -98,15 +98,7 @@ for index, row in df_companies.iterrows():
                 df_company_positive = df_company[df_company.label == 1].sample(frac=1)
                 df_company_neutral = df_company[df_company.label == 0].sample(frac=1)
                 df_company_negative = df_company[df_company.label == -1].sample(frac=1)
-                
-                # Oversampling for neutral class(0)
-                # if len(df_company_neutral) != 0:
-                #     oversamples = int(len(df_company_positive)/len(df_company_neutral))
-                #     df_company_neutral_os = df_company_neutral
-                #     for oversample in range(oversamples-1):
-                #         df_company_neutral_os = df_company_neutral_os.append(df_company_neutral)
-                #     df_company_neutral = df_company_neutral_os
-                
+
                 analysis = pd.Series({"dataset": row['code'] + '_' + str(interval) + 'd.tsv', "1s": len(df_company_positive), "0s": len(df_company_neutral), "-1s": len(df_company_negative)})
                 df_analysis = df_analysis.append(analysis, ignore_index=True)
                 
@@ -137,7 +129,5 @@ for index, row in df_companies.iterrows():
                 df_company_test = df_company_test.append(df_company_neutral.head(testNeutralSize))
                 df_company_neutral = df_company_neutral.iloc[testNeutralSize:]
                 
-                # exportToTSV(df_company_train, row['code'] + '_3c_os_' + str(interval) + 'd_train.tsv')
-                # exportToTSV(df_company_test, row['code'] + '_3c_os_' + str(interval) + 'd_test.tsv')
                 exportToTSV(df_company_train, row['code'] + '_3c_' + str(interval) + 'd_train.tsv')
                 exportToTSV(df_company_test, row['code'] + '_3c_' + str(interval) + 'd_test.tsv')
